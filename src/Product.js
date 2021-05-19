@@ -1,14 +1,13 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 
 export default function Product(props) {
     const [count, setCount] = useState(0);
 
-    const {details} = props;
+    const { details } = props;
 
     function handleIncrementClick() {
         setCount(count + 1);
     }
-
     function handleDecrementClick() {
         if (count > 0) {
             setCount(count - 1);
