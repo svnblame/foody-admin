@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import ProductsList from "./ProductsList.js";
-import AddProductForm from "./AddProductForm.js";
+import ProductsList from "./ProductsList";
+import AddProductForm from "./AddProductForm";
+import Loader from "./Loader";
 
 export default function StoreFront() {
     const [products, setProducts] = useState(() => {
@@ -14,6 +15,19 @@ export default function StoreFront() {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [validation, setValidation] = useState("");
+    const [isProductLoading, setIsProductLoading] = useState([]);
+
+    useEffect(() => {
+        fetch(`https://react-tutorial-demo.firebaseio.com/products.json`)
+            .then(response => response.json())
+            .then(data => {
+                setProducts(data);
+            })
+            .catch(error => console.log(error))
+            .finally(() => {
+                setIsProductLoading(false);
+            })
+    }, []);
 
     useEffect(() => {
         if (products.length === 0) {
@@ -63,6 +77,7 @@ export default function StoreFront() {
     }
 
     return <>
+        {isProductLoading && <Loader />}
         <AddProductForm name={name} description={description} validation={validation} onNameChange={handleNameChange} onDescriptionChange={handleDescriptionChange} onFormSubmit={handleFormSubmit} />
         <div>{products.length === 0 && <p>Add your first product</p>}</div>
         <ProductsList products={products} onDeleteClick={handleDeleteClick} />
