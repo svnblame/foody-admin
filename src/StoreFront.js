@@ -69,7 +69,6 @@ export default function StoreFront() {
         .then(data => {
             if (data) {
                 console.log(data.message);
-                console.log(data);
                 setProducts([...products, {
                     id: products.length + 1,
                     name: name,
