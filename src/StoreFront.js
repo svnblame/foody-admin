@@ -1,103 +1,23 @@
 import React, { useState, useEffect } from "react";
-import ProductsList from "./ProductsList";
-import AddProductForm from "./AddProductForm";
+import useFetch from "./useFetch";
+import Product from "./Product";
 import Loader from "./Loader";
 
 export default function StoreFront() {
-    const [products, setProducts] = useState(() => {
-        const savedProducts = localStorage.getItem('products');
-        if (savedProducts) {
-            return JSON.parse(savedProducts);
-        } else {
-            return [];
-        }
-    });
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [validation, setValidation] = useState("");
-    const [isProductLoading, setIsProductLoading] = useState([]);
+    const [products, setProducts] = useState([]);
+    const { get, loading } = useFetch("https://react-tutorial-demo.firebaseio.com/");
 
     useEffect(() => {
-        fetch(`https://react-tutorial-demo.firebaseio.com/products.json`)
-            .then(response => response.json())
-            .then(data => {
-                setProducts(data);
-            })
-            .catch(error => console.log(error))
-            .finally(() => {
-                setIsProductLoading(false);
-            })
+        get("products.json")
+        .then(data => {
+            setProducts(data);
+        })
+        .catch(error => console.error(error));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    useEffect(() => {
-        if (products.length === 0) {
-            document.title = 'No Products';
-        } else if (products.length === 1) {
-            document.title = '1 Product';
-        } else {
-            document.title = `${products.length} products`
-        }
-    }, [products]);
-
-    useEffect(() => {
-        localStorage.setItem('products', JSON.stringify(products));
-    }, [products]);
-
-    function handleFormSubmit(event) {
-        event.preventDefault();
-
-        if (!name) {
-            setValidation("Please enter a name");
-            return;
-        }
-        if (!description) {
-            setValidation("Please enter a description");
-            return;
-        }
-
-        fetch("https://api.learnjavascript.online/demo/react/admin/products", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                name: name,
-                description: description
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data) {
-                console.log(data.message);
-                setProducts([...products, {
-                    id: products.length + 1,
-                    name: name,
-                    description: description
-                }]);
-                setName("");
-                setDescription("");
-                setValidation("");
-            }
-        })
-        .catch(error => console.log(error));
-    }
-
-    function handleNameChange(event) {
-        setName(event.target.value);
-    }
-
-    function handleDescriptionChange(event) {
-        setDescription(event.target.value);
-    }
-
-    function handleDeleteClick(id) {
-        setProducts(products.filter(product => product.id !== id));
-    }
-
-    return <>
-        {isProductLoading && <Loader />}
-        <AddProductForm name={name} description={description} validation={validation} onNameChange={handleNameChange} onDescriptionChange={handleDescriptionChange} onFormSubmit={handleFormSubmit} />
-        <div>{products.length === 0 && <p>Add your first product</p>}</div>
-        <ProductsList products={products} onDeleteClick={handleDeleteClick} />
-    </>;
+    return <div className="store-front">
+        {loading && <Loader />}
+        {products.map(product => <Product key={product.id} details={product} />)}
+    </div>;
 }
